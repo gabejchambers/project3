@@ -38,7 +38,7 @@ def plot(matrix, weights=None, title="Car Size Classification"):
     x_res = 0.001
     ys = np.arange(map_min, map_max, y_res)
     xs = np.arange(map_min, map_max, x_res)
-    zs = [] 
+    zs = []
     for cur_y in np.arange(map_min, map_max, y_res):
         for cur_x in np.arange(map_min, map_max, x_res):
             zs.append(round(activation(1 * weights[0] + cur_x * weights[1] + cur_y * weights[2])))
