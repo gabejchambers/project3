@@ -68,6 +68,44 @@ def plotCube(data, weights, dataName):
     plt.show()
 
 
+def plotTest(data):  # , weights):
+    # LOBF
+    # x = np.arange(-0.1, 1.1, step=0.1)
+    # y = weights[0] * x ** 3 + weights[1] * x ** 2 + weights[2] * x + weights[-1]
+    title = "Linear Prediction"
+    plt.title(title)
+    plt.xlabel("Time")
+    plt.ylabel("Energy Consumption")
+    # plt.plot(x, y)
+    # Data:
+    x = data[:, 0]
+    y = data[:, 1]
+    plt.scatter(x, y, color='blue')
+    y = data[:, 2]
+    plt.scatter(x, y, color='red')
+    plt.show()
+    title = "Quadratic Prediction"
+    plt.title(title)
+    plt.xlabel("Time")
+    plt.ylabel("Energy Consumption")
+    x = data[:, 0]
+    y = data[:, 1]
+    plt.scatter(x, y, color='blue')
+    y = data[:, 3]
+    plt.scatter(x, y, color='orange')
+    plt.show()
+    title = "Cubic Prediction"
+    plt.title(title)
+    plt.xlabel("Time")
+    plt.ylabel("Energy Consumption")
+    x = data[:, 0]
+    y = data[:, 1]
+    plt.scatter(x, y, color='blue')
+    y = data[:, 4]
+    plt.scatter(x, y, color='green')
+    plt.show()
+
+
 # use standard alpha
 def trainLinear(matrix):
     row_num = matrix.shape[0]
@@ -81,6 +119,7 @@ def trainLinear(matrix):
             weights[0] += learn * matrix[row, 0]
             weights[-1] += learn
     return weights
+
 
 # use standard alpha
 def trainQuad(matrix):
@@ -118,6 +157,24 @@ def trainCube(matrix):
     return weights
 
 
+def predict(wts, matrix):
+    linwts = wts[0]
+    quadwts = wts[1]
+    cubewts = wts[2]
+    row_num = matrix.shape[0]
+    for row in range(row_num):
+        matrix[row, 2] = linwts[0] * matrix[row, 0] + linwts[1]
+        matrix[row, 3] = quadwts[0] * matrix[row, 0]**2 + quadwts[1] * matrix[row, 0] + quadwts[2]
+        matrix[row, 4] = cubewts[0] * matrix[row, 0]**3 + cubewts[1] * matrix[row, 0]**2 + cubewts[2] * matrix[row, 0] + cubewts[3]
+    return matrix
+
+
+def addCols(matrix):
+    calcs = np.zeros((matrix.shape[0], 1))
+    matrix = np.concatenate([matrix, calcs, calcs, calcs], axis=1)
+    return matrix
+
+
 def preprocess(matrix):
     matrix = np.concatenate((normalize(matrix[:, 0]), normalize(matrix[:, 1])), axis=1)
     np.random.shuffle(matrix)
@@ -141,7 +198,7 @@ def startDataSet(dataset, dataname):
     w_C = trainCube(dataset)
     print(w_C)
     plotCube(dataset, w_C, dataname)
-    return
+    return w_L, w_Q, w_C
 
 
 alpha = .2
@@ -157,8 +214,17 @@ data_test = pd.read_csv('Project3_data/test_data_4.txt', sep=",", header=None).t
 # print(npA[:,2]) # column 2
 # print(npA[2,1]) #value
 
-startDataSet(data_1, "data_1")
-startDataSet(data_2, "data_2")
-startDataSet(data_3, "data_3")
+# startDataSet(data_1, "data_1")
+# startDataSet(data_2, "data_2")
+# startDataSet(data_3, "data_3")
+weights = startDataSet(np.concatenate((data_1, data_2, data_3), axis=0), "Training Data")
+
+data_test = preprocess(data_test)
+print(data_test)
+data_test = addCols(data_test)
+print(data_test)
+data_test = predict(weights, data_test)
+print(data_test)
+plotTest(data_test)
 
 
