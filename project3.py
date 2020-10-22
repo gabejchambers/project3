@@ -21,11 +21,47 @@ def activation(net):
     return net
 
 
-def plotLinear(data, weights, dataName):
+def totalError(matrix):
+    # TE = SUM((d-o)^2)
+    linTE = 0
+    quadTE = 0
+    cubeTE = 0
+    for row in range(matrix.shape[0]):
+        linerr = matrix[row,1] - matrix[row,2]
+        linTE += linerr ** 2
+        quaderr = matrix[row,1] - matrix[row,3]
+        quadTE += quaderr ** 2
+        cubeerr = matrix[row,1] - matrix[row,4]
+        cubeTE += cubeerr ** 2
+    return linTE, quadTE, cubeTE
+
+
+def trainTotalError(matrix, wts, typ):
+    # linwts = wts[0]
+    # quadwts = wts[1]
+    # cubewts = wts[2]
+    TE = 0
+    obs = 0
+    for row in range(matrix.shape[0]):
+        if typ == "lin":
+            obs = wts[0] * matrix[row, 0] + wts[1]
+        elif typ == "quad":
+            obs = wts[0] * matrix[row, 0] ** 2 + wts[1] * matrix[row, 0] + wts[2]
+        elif typ == "cube":
+            y = wts[0] * matrix[row, 0] ** 3 + wts[1] * matrix[row, 0] ** 2 + wts[2] * matrix[row, 0] + wts[3]
+        else:
+            obs = "bop" + 123
+        err = matrix[row, 1] - obs
+        TE += err ** 2
+    return TE
+
+
+
+def plotLinear(data, wts, dataName):
     # LOBF:
     x = np.arange(-0.1, 1.1, step=0.01)
-    y = weights[0] * x + weights[1]
-    title = "Linear Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles)
+    y = wts[0] * x + wts[1]
+    title = "Linear Regression " + str(dataName) + " alpha=" + str(alpha) + "\n #iterations=" + str(cycles) + " equation=" + str(round(wts[0], 4)) + "x+" + str(round(wts[1], 4)) + "\n Total Error=" + str(round(trainTotalError(data, wts, "lin"), 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
@@ -37,11 +73,11 @@ def plotLinear(data, weights, dataName):
     plt.show()
 
 
-def plotQuad(data, weights, dataName):
+def plotQuad(data, wts, dataName):
     # LOBF:
     x = np.arange(-0.1, 1.1, step=0.1)
-    y = weights[0] * x**2 + weights[1] * x + weights[-1]
-    title = "Quadratic Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles)
+    y = wts[0] * x ** 2 + wts[1] * x + wts[-1]
+    title = "Quadratic Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles) + "\n equation=" + str(round(wts[0], 4)) + "x^2+" + str(round(wts[1], 4)) + "x+" + str(round(wts[2], 4)) + "\n Total Error=" + str(round(trainTotalError(data, wts, "quad"), 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
@@ -52,11 +88,12 @@ def plotQuad(data, weights, dataName):
     plt.scatter(x,y)
     plt.show()
 
-def plotCube(data, weights, dataName):
+
+def plotCube(data, wts, dataName):
     # LOBF:
     x = np.arange(-0.1, 1.1, step=0.1)
-    y = weights[0] * x**3 + weights[1] * x**2 + weights[2] * x + weights[-1]
-    title = "Cubic Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles)
+    y = wts[0] * x ** 3 + wts[1] * x ** 2 + wts[2] * x + wts[-1]
+    title = "Cubic Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles) + "\n equation=" + str(round(wts[0], 4)) + "x^3+" + str(round(wts[1], 4)) + "x^2+" + str(round(wts[2], 4)) + "x+" + str(round(wts[3], 4)) + "\n Total Error=" + str(round(trainTotalError(data, wts, "quad"), 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
@@ -68,41 +105,55 @@ def plotCube(data, weights, dataName):
     plt.show()
 
 
-def plotTest(data):  # , weights):
-    # LOBF
-    # x = np.arange(-0.1, 1.1, step=0.1)
-    # y = weights[0] * x ** 3 + weights[1] * x ** 2 + weights[2] * x + weights[-1]
-    title = "Linear Prediction"
+def plotTest(data, wts, tes):
+    linwts = wts[0]
+    quadwts = wts[1]
+    cubewts = wts[2]
+    linte = tes[0]
+    quadte = tes[1]
+    cubete = tes[2]
+    xline = np.arange(-0.1, 1.1, step=0.1)
+
+    title = "Linear Prediction \n Total Error=" + str(round(linte, 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
-    # plt.plot(x, y)
-    # Data:
+    y = linwts[0] * xline + linwts[1]
+    plt.plot(xline, y, color="red", label="Predicted")
     x = data[:, 0]
     y = data[:, 1]
-    plt.scatter(x, y, color='blue')
+    plt.scatter(x, y, color='blue', label="Actual")
     y = data[:, 2]
     plt.scatter(x, y, color='red')
+    plt.legend(loc="upper left")
     plt.show()
-    title = "Quadratic Prediction"
+
+    title = "Quadratic Prediction \n Total Error=" + str(round(quadte, 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
+    y = quadwts[0] * xline**2 + quadwts[1] * xline + quadwts[2]
+    plt.plot(xline, y, color="orange", label="Predicted")
     x = data[:, 0]
     y = data[:, 1]
-    plt.scatter(x, y, color='blue')
+    plt.scatter(x, y, color='blue', label="Actual")
     y = data[:, 3]
     plt.scatter(x, y, color='orange')
+    plt.legend(loc="upper left")
     plt.show()
-    title = "Cubic Prediction"
+
+    title = "Cubic Prediction \n Total Error=" + str(round(cubete, 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
+    y = cubewts[0] * xline**3 + cubewts[1] * xline**2 + cubewts[2] * xline + cubewts[3]
+    plt.plot(xline, y, color="green", label="Predicted")
     x = data[:, 0]
     y = data[:, 1]
-    plt.scatter(x, y, color='blue')
+    plt.scatter(x, y, color='blue', label="Actual")
     y = data[:, 4]
     plt.scatter(x, y, color='green')
+    plt.legend(loc="upper left")
     plt.show()
 
 
@@ -225,6 +276,7 @@ data_test = addCols(data_test)
 print(data_test)
 data_test = predict(weights, data_test)
 print(data_test)
-plotTest(data_test)
+totalerrors = totalError(data_test)
+plotTest(data_test, weights, totalerrors)
 
 
