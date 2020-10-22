@@ -37,9 +37,6 @@ def totalError(matrix):
 
 
 def trainTotalError(matrix, wts, typ):
-    # linwts = wts[0]
-    # quadwts = wts[1]
-    # cubewts = wts[2]
     TE = 0
     obs = 0
     for row in range(matrix.shape[0]):
@@ -48,7 +45,7 @@ def trainTotalError(matrix, wts, typ):
         elif typ == "quad":
             obs = wts[0] * matrix[row, 0] ** 2 + wts[1] * matrix[row, 0] + wts[2]
         elif typ == "cube":
-            y = wts[0] * matrix[row, 0] ** 3 + wts[1] * matrix[row, 0] ** 2 + wts[2] * matrix[row, 0] + wts[3]
+            obs = wts[0] * matrix[row, 0] ** 3 + wts[1] * matrix[row, 0] ** 2 + wts[2] * matrix[row, 0] + wts[3]
         else:
             obs = "bop" + 123
         err = matrix[row, 1] - obs
@@ -93,7 +90,7 @@ def plotCube(data, wts, dataName):
     # LOBF:
     x = np.arange(-0.1, 1.1, step=0.1)
     y = wts[0] * x ** 3 + wts[1] * x ** 2 + wts[2] * x + wts[-1]
-    title = "Cubic Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles) + "\n equation=" + str(round(wts[0], 4)) + "x^3+" + str(round(wts[1], 4)) + "x^2+" + str(round(wts[2], 4)) + "x+" + str(round(wts[3], 4)) + "\n Total Error=" + str(round(trainTotalError(data, wts, "quad"), 4))
+    title = "Cubic Regression " + str(dataName) + " alpha =" + str(alpha) + " #iterations = " + str(cycles) + "\n equation=" + str(round(wts[0], 4)) + "x^3+" + str(round(wts[1], 4)) + "x^2+" + str(round(wts[2], 4)) + "x+" + str(round(wts[3], 4)) + "\n Total Error=" + str(round(trainTotalError(data, wts, "cube"), 4))
     plt.title(title)
     plt.xlabel("Time")
     plt.ylabel("Energy Consumption")
@@ -252,8 +249,8 @@ def startDataSet(dataset, dataname):
     return w_L, w_Q, w_C
 
 
-alpha = .2
-cycles = 5000
+alpha = .2 #for cube, .2, 5000 was okay
+cycles = 5000 #0.19, .081 @.1, 1000
 data_1 = pd.read_csv('Project3_data/train_data_1.txt', sep=",", header=None).to_numpy()
 data_2 = pd.read_csv('Project3_data/train_data_2.txt', sep=",", header=None).to_numpy()
 data_3 = pd.read_csv('Project3_data/train_data_3.txt', sep=",", header=None).to_numpy()
